@@ -5,6 +5,8 @@ import NotFound from "../views/NotFound";
 import Index from '../views/index'
 import AddArticle from "../views/AddArticle";
 import Article from "../views/Article";
+import User from "../views/User";
+import UserSet from "../views/UserSet";
 Vue.use(Router)
 
 export default new Router({
@@ -16,13 +18,18 @@ export default new Router({
       name: 'login'
     },
     {
+      path: '/user',
+      component: User,
+      name: 'user'
+    },
+    {
       path: '/article',
       component: Article,
       name: 'article'
     },
     {
       path:'/',
-      redirect: '/index'
+      redirect: '/login'
     },
     {
       path: '/index',
@@ -33,6 +40,11 @@ export default new Router({
       path: '/addArticle',
       component: AddArticle,
       name: 'addArticle'
+    },
+    {
+      path: '/userSet',
+      component: UserSet,
+      name: 'userSet'
     },
     {
       path: '*',

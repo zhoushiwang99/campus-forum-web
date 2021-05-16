@@ -3,7 +3,7 @@
     <IndexNavMenu></IndexNavMenu>
     <el-tabs v-model="activeName" type="card" @tab-click="handleClick"
              style="position: absolute;width: 800px;margin-top: 20px;margin-left: 180px;">
-      <el-tab-pane label="帖子" style="padding: 15px" name="first">
+      <el-tab-pane label="帖子" style="padding: 15px" name="first" >
         <el-tabs>
           <el-tab-pane label="帖子列表">
 
@@ -11,15 +11,15 @@
               <li v-for="item in article" :key="item.article.id" style="position: relative;margin-top: 10px;">
                 <a href="http://www.baidu.com" class="">
                   <el-avatar :size="50" :alt="item.user.name"
-                             src="http://localhost:8889/img/pikapikaqiu.jpg"></el-avatar>
+                             :src="item.user.avatar"></el-avatar>
                 </a>
                 <h2 style="display: inline-block;position: absolute;margin-top: 10px">
                   <el-tag type="success">{{ item.category }}</el-tag>
-<!--                  <el-link :href="'http://localhost:8888/article/' + item.article.id " @click="this.$router.push({name:'',params:{id:item.article.id}})" target="_blank">{{
-                      item.article.title
-                    }}
-                  </el-link>-->
-                  <el-link  @click="goArticle(item.article.id)">{{
+                  <!--                  <el-link :href="'http://localhost:8888/article/' + item.article.id " @click="this.$router.push({name:'',params:{id:item.article.id}})" target="_blank">{{
+                                        item.article.title
+                                      }}
+                                    </el-link>-->
+                  <el-link @click="goArticle(item.article.id)">{{
                       item.article.title
                     }}
                   </el-link>
@@ -47,7 +47,7 @@
               <el-pagination
                 background
                 layout="prev, pager, next" :hide-on-single-page="false"
-                :total="total" :page-size="5" @current-change="pageChange" ><!--@prev-click="prev" @next-click="next"-->
+                :total="total" :page-size="5" @current-change="pageChange"><!--@prev-click="prev" @next-click="next"-->
               </el-pagination>
             </div>
 
@@ -55,35 +55,35 @@
           </el-tab-pane>
 
         </el-tabs>
-<!--        <div style="position: absolute;margin-top: -67%;margin-left: 10%">-->
-<!--        <div style="float: left;position:relative;margin-top: -544px;margin-left: 90px;">-->
-<!--        <div style="">
-          <el-form label-width="80px" style="position: relative;display: inline-block">
-            <el-form-item label="选择分类">
-              <el-select v-model="form.region" placeholder="综合" style="width: 100px;" @change="changeCategory">
-                <el-option label="综合" value=""></el-option>
-                <el-option v-for="item in articleCategory" :key="item.id" :label="item.name"
-                           :value="item.id"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-form>
-        </div>-->
+        <!--        <div style="position: absolute;margin-top: -67%;margin-left: 10%">-->
+        <!--        <div style="float: left;position:relative;margin-top: -544px;margin-left: 90px;">-->
+        <!--        <div style="">
+                  <el-form label-width="80px" style="position: relative;display: inline-block">
+                    <el-form-item label="选择分类">
+                      <el-select v-model="form.region" placeholder="综合" style="width: 100px;" @change="changeCategory">
+                        <el-option label="综合" value=""></el-option>
+                        <el-option v-for="item in articleCategory" :key="item.id" :label="item.name"
+                                   :value="item.id"></el-option>
+                      </el-select>
+                    </el-form-item>
+                  </el-form>
+                </div>-->
       </el-tab-pane>
-      <el-tab-pane label="个人中心" style="padding: 15px" name="second">个人中心</el-tab-pane>
-      <el-tab-pane label="我的发布" style="padding: 15px" name="third">我的发布</el-tab-pane>
+      <el-tab-pane label="个人中心" style="padding: 15px" name="second" ></el-tab-pane>
+      <el-tab-pane label="我的发布" style="padding: 15px" name="third" ></el-tab-pane>
     </el-tabs>
 
     <div style="display: inline-block;position: absolute; margin-left: 1000px;margin-top: 20px">
       <el-input style="width: 200px;"></el-input>
       <el-button type="primary" icon="el-icon-search">搜索</el-button>
-      <el-button type="primary">发表新帖</el-button>
+      <el-button type="primary" @click="toAddArticlePage">发表新帖</el-button>
     </div>
 
     <div style="position: absolute;margin-left: 290px;margin-top: 88px">
       <el-form label-width="80px" style="position: relative;display: inline-block">
         <el-form-item label="选择分类">
           <el-select v-model="form.region" placeholder="综合" style="width: 100px;" @change="changeCategory">
-            <el-option label="综合" value=""></el-option>
+            <el-option label="综合" value="0"></el-option>
             <el-option v-for="item in articleCategory" :key="item.id" :label="item.name"
                        :value="item.id"></el-option>
           </el-select>
@@ -115,7 +115,7 @@ export default {
       activeName: 'first',
       articleCategory: '',
       form: {
-        region: '综合'
+        region: '0'
       },
       sort: 0,
       total: 0,
@@ -125,13 +125,18 @@ export default {
   },
   methods: {
     handleClick(tab, event) {
-      console.log(tab, event);
+      // console.log(tab, event);
+      if(tab.name == "second") {
+        this.toMyPage()
+      }
+      if(tab.name == "third") {
+        this.toMyPublish()
+      }
     },
-    goArticle(articleId){
-      console.log("syuiyu" + articleId);
+    goArticle(articleId) {
       this.$router.push({
-        path:'/article',
-        query:{
+        path: '/article',
+        query: {
           articleId: articleId
         }
       })
@@ -169,13 +174,19 @@ export default {
       console.log(currentPage)
     },
     pageChange(currentPage) {
-      console.log(currentPage);
       let that = this;
+      let categoryId;
+      if (this.form.region == "综合") {
+        categoryId = '';
+      } else {
+        categoryId = this.form.region;
+      }
+
       if (that.sort === 0) {
         console.log("按最新")
         axios.get("http://localhost:8889/getArticleByTime", {
           params: {
-            categoryId: that.form.region,
+            categoryId: categoryId,
             pageNo: currentPage,
             pageSize: ''
           }
@@ -191,14 +202,38 @@ export default {
         console.log("按热度")
       }
     },
+    toMyPage() {
+      let me = JSON.parse(sessionStorage.getItem("user"));
+      this.$router.push({
+        path: '/user',
+        query: {
+          userId: me.id
+        }
+      })
+    },
+    toMyPublish() {
+      this.$router.push({
+        path: '/userSet'
+      })
+    },
+    toAddArticlePage() {
+      this.$router.push({
+        path: '/addArticle'
+      })
+    },
     changeCategory() {
-      console.log(this.form.region)
+      let categoryId;
+      if (this.form.region == "综合") {
+        categoryId = '';
+      } else {
+        categoryId = this.form.region;
+      }
       let that = this;
       if (that.sort === 0) {
         console.log("按最新")
         axios.get("http://localhost:8889/getArticleByTime", {
           params: {
-            categoryId: that.form.region,
+            categoryId: categoryId,
             pageNo: '',
             pageSize: ''
           }

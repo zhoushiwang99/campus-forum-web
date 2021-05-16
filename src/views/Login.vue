@@ -30,7 +30,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
+          <el-button type="primary" @click="submitForm('ruleForm')" :loading="loginButton">登录</el-button>
           <el-button @click="resetForm('ruleForm')">重置</el-button>
         </el-form-item>
       </el-form>
@@ -54,6 +54,7 @@ export default {
         validateCode: '',
         university: ''
       },
+      loginButton: false,
       university: '',
       imgurl: 'http://localhost:8889/getValidateCode',
 
@@ -80,7 +81,7 @@ export default {
       var that = this;
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          alert("登录")
+          this.loginButton = true;
           var that = this;
           axios.post('http://localhost:8889/login', qs.stringify({
             account: this.ruleForm.username,
@@ -92,7 +93,8 @@ export default {
             console.log(response.data);
             if(response.data.code !== 200) {
               that.$message.error(response.data.msg);
-              console.log("错误")
+              console.log("错误");
+              that.loginButton = false;
             }
             else{
               that.$message({
@@ -101,7 +103,11 @@ export default {
               });
               sessionStorage.clear();
               sessionStorage.setItem("token",response.data.data.token);
-              sessionStorage.setItem("user",response.data.data.user);
+              // sessionStorage.setItem("user",response.data.data.user);
+              sessionStorage.setItem("user",JSON.stringify(response.data.data.user));
+              that.$router.push({
+                path: '/index',
+              })
             }
           }).catch(function (error) {
             console.log(error)
