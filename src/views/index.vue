@@ -3,22 +3,19 @@
     <IndexNavMenu></IndexNavMenu>
     <el-tabs v-model="activeName" type="card" @tab-click="handleClick"
              style="position: absolute;width: 800px;margin-top: 20px;margin-left: 180px;">
-      <el-tab-pane label="帖子" style="padding: 15px" name="first" >
+      <el-tab-pane label="帖子" style="padding: 15px" name="first">
         <el-tabs>
           <el-tab-pane label="帖子列表">
 
             <ul>
               <li v-for="item in article" :key="item.article.id" style="position: relative;margin-top: 10px;">
-                <a href="http://www.baidu.com" class="">
+                <a :href="'http://localhost:8888/user?userId=' + item.user.id" class="">
                   <el-avatar :size="50" :alt="item.user.name"
                              :src="item.user.avatar"></el-avatar>
                 </a>
                 <h2 style="display: inline-block;position: absolute;margin-top: 10px">
                   <el-tag type="success">{{ item.category }}</el-tag>
-                  <!--                  <el-link :href="'http://localhost:8888/article/' + item.article.id " @click="this.$router.push({name:'',params:{id:item.article.id}})" target="_blank">{{
-                                        item.article.title
-                                      }}
-                                    </el-link>-->
+                  <el-tag type="danger" style="border: 0" v-if="item.article.priority===1">置顶</el-tag>
                   <el-link @click="goArticle(item.article.id)">{{
                       item.article.title
                     }}
@@ -55,27 +52,14 @@
           </el-tab-pane>
 
         </el-tabs>
-        <!--        <div style="position: absolute;margin-top: -67%;margin-left: 10%">-->
-        <!--        <div style="float: left;position:relative;margin-top: -544px;margin-left: 90px;">-->
-        <!--        <div style="">
-                  <el-form label-width="80px" style="position: relative;display: inline-block">
-                    <el-form-item label="选择分类">
-                      <el-select v-model="form.region" placeholder="综合" style="width: 100px;" @change="changeCategory">
-                        <el-option label="综合" value=""></el-option>
-                        <el-option v-for="item in articleCategory" :key="item.id" :label="item.name"
-                                   :value="item.id"></el-option>
-                      </el-select>
-                    </el-form-item>
-                  </el-form>
-                </div>-->
       </el-tab-pane>
-      <el-tab-pane label="个人中心" style="padding: 15px" name="second" ></el-tab-pane>
-      <el-tab-pane label="我的发布" style="padding: 15px" name="third" ></el-tab-pane>
+      <el-tab-pane label="个人中心" style="padding: 15px" name="second"></el-tab-pane>
+      <el-tab-pane label="我的发布" style="padding: 15px" name="third"></el-tab-pane>
     </el-tabs>
 
     <div style="display: inline-block;position: absolute; margin-left: 1000px;margin-top: 20px">
-      <el-input style="width: 200px;"></el-input>
-      <el-button type="primary" icon="el-icon-search">搜索</el-button>
+      <el-input style="width: 200px;" v-model="keyword"></el-input>
+      <el-button type="primary" icon="el-icon-search" @click="searchArticle">搜索</el-button>
       <el-button type="primary" @click="toAddArticlePage">发表新帖</el-button>
     </div>
 
@@ -91,13 +75,21 @@
       </el-form>
     </div>
 
-    <div style="position: absolute;margin-left: 900px;margin-top: 110px">
+    <div style="position: absolute;margin-left: 900px;margin-top: 98px">
       <el-breadcrumb separator="|">
-        <el-breadcrumb-item><a href="/">最新</a></el-breadcrumb-item>
-        <el-breadcrumb-item><a href="/">最热</a></el-breadcrumb-item>
+        <!--        <el-breadcrumb-item><span @click="changeToNew">最新</span></el-breadcrumb-item>-->
+        <!--        <el-breadcrumb-item><span @click="changeToHot">最热</span></el-breadcrumb-item>-->
+        <el-breadcrumb-item>
+          <el-button type="text" :disabled="sort==0" @click="changeToNew" title="按最新排序">最新</el-button>
+        </el-breadcrumb-item>
+        <el-breadcrumb-item>
+          <el-button type="text" :disabled="sort==1" @click="changeToHot" title="按热度排序">最热</el-button>
+        </el-breadcrumb-item>
       </el-breadcrumb>
     </div>
-
+    <div style="width: 400px;height: 170px;position: absolute;margin-left: 800px;margin-top: 200px">
+      <h1>iu</h1>
+    </div>
   </div>
 </template>
 
@@ -113,6 +105,7 @@ export default {
   data() {
     return {
       activeName: 'first',
+      keyword: '',
       articleCategory: '',
       form: {
         region: '0'
@@ -126,10 +119,10 @@ export default {
   methods: {
     handleClick(tab, event) {
       // console.log(tab, event);
-      if(tab.name == "second") {
+      if (tab.name == "second") {
         this.toMyPage()
       }
-      if(tab.name == "third") {
+      if (tab.name == "third") {
         this.toMyPublish()
       }
     },
@@ -138,6 +131,18 @@ export default {
         path: '/article',
         query: {
           articleId: articleId
+        }
+      })
+    },
+    searchArticle() {
+      console.log("keyword" + this.keyword);
+      let tempKeyword = this.keyword;
+      this.keyword = '';
+      console.log("keyword" + this.keyword);
+      this.$router.push({
+        path: '/searchArticle',
+        query: {
+          keyword: tempKeyword
         }
       })
     },
@@ -167,6 +172,7 @@ export default {
         console.log(error);
       })
     },
+
     prev(currentPage) {
       console.log(currentPage)
     },
@@ -200,7 +206,39 @@ export default {
         })
       } else {
         console.log("按热度")
+        axios.get("http://localhost:8889/getArticleByHot", {
+          params: {
+            categoryId: categoryId,
+            pageNo: currentPage - 1,
+            pageSize: ''
+          }
+        }).then(function (response) {
+          console.log(response.data)
+          that.total = response.data.data.total;
+          that.article = response.data.data.article;
+          console.log(that.total)
+        }).catch(function (error) {
+          console.log(error);
+        })
       }
+    },
+    getArticleByHot() {
+      console.log("按热度")
+      let that = this;
+      axios.get("http://localhost:8889/getArticleByHot", {
+        params: {
+          categoryId: '',
+          pageNo: '',
+          pageSize: ''
+        }
+      }).then(function (response) {
+        console.log(response.data)
+        that.total = response.data.data.total;
+        that.article = response.data.data.article;
+        console.log(that.total)
+      }).catch(function (error) {
+        console.log(error);
+      })
     },
     toMyPage() {
       let me = JSON.parse(sessionStorage.getItem("user"));
@@ -220,6 +258,16 @@ export default {
       this.$router.push({
         path: '/addArticle'
       })
+    },
+    changeToNew() {
+      console.log("new");
+      this.sort = 0;
+      this.getArticleByTime();
+    },
+    changeToHot() {
+      console.log("hot")
+      this.sort = 1;
+      this.getArticleByHot();
     },
     changeCategory() {
       let categoryId;
@@ -247,6 +295,20 @@ export default {
         })
       } else {
         console.log("按热度")
+        axios.get("http://localhost:8889/getArticleByHot", {
+          params: {
+            categoryId: categoryId,
+            pageNo: '',
+            pageSize: ''
+          }
+        }).then(function (response) {
+          console.log(response.data)
+          that.total = response.data.data.total;
+          that.article = response.data.data.article;
+          console.log(that.total)
+        }).catch(function (error) {
+          console.log(error);
+        })
       }
     }
   },

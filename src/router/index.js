@@ -7,6 +7,9 @@ import AddArticle from "../views/AddArticle";
 import Article from "../views/Article";
 import User from "../views/User";
 import UserSet from "../views/UserSet";
+import SearchArticle from "../views/SearchArticle";
+import Admin from "../views/Admin";
+import dayjs from 'dayjs';
 Vue.use(Router)
 
 export default new Router({
@@ -28,6 +31,11 @@ export default new Router({
       name: 'article'
     },
     {
+      path: '/searchArticle',
+      component: SearchArticle,
+      name: 'searchArticle'
+    },
+    {
       path:'/',
       redirect: '/login'
     },
@@ -35,6 +43,11 @@ export default new Router({
       path: '/index',
       component: Index,
       name: 'index'
+    },
+    {
+      path: '/admin',
+      component:Admin,
+      name:'admin'
     },
     {
       path: '/addArticle',

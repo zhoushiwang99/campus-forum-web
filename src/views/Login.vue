@@ -78,7 +78,7 @@ export default {
   },
   methods: {
     submitForm(formName) {
-      var that = this;
+      let that = this;
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.loginButton = true;
@@ -105,6 +105,9 @@ export default {
               sessionStorage.setItem("token",response.data.data.token);
               // sessionStorage.setItem("user",response.data.data.user);
               sessionStorage.setItem("user",JSON.stringify(response.data.data.user));
+              if (response.data.data.admin != null) {
+                sessionStorage.setItem("admin",response.data.data.admin);
+              }
               that.$router.push({
                 path: '/index',
               })

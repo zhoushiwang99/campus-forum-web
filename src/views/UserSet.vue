@@ -208,17 +208,19 @@ export default {
         }
       }).then(function (response) {
         console.log(response);
-        alert(1);
         if(response.data.code == 200){
-          alert(2)
           sessionStorage.setItem("user",JSON.stringify(response.data.data))
           that.user = response.data.data
           that.$message({
             message: '修改成功',
             type: 'success'
           });
+          that.reload();
         }else {
-          alert(3)
+          that.$message({
+            message: response.data.msg,
+            type: 'error'
+          });
         }
 
       }).catch(function (error) {

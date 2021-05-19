@@ -129,34 +129,47 @@ export default {
       console.log(tab, event);
     },
     onSubmit() {
+      // console.log("hhh ");
+      // console.log(this.content)
+      // console.log(this.form.title)
+      // console.log(this.form.category)
       this.pubStatus = true;
-      console.log("hhh ");
-      console.log(this.content)
-      console.log(this.form.title)
-      console.log(this.form.category)
-      let that = this;
-      let token = sessionStorage.getItem("token")
-      axios.post('http://localhost:8889/addArticle', qs.stringify({
-        categoryId: that.form.category,
-        title: that.form.title,
-        content: that.content
-      }), {
-        headers: {
-          token: token
-        }
-      }).then(function (response) {
-        console.log(response.data);
-        if (response.data.code !== 200) {
-          that.$message.error(response.data.msg);
-          console.log("错误");
+      let content = this.content;
+      if (content == null || content.length < 5) {
+        this.$message.error("正文内容不得少于5个字");
+        this.pubStatus = false;
+        return;
+      }
+      this.$refs['form'].validate((valid) => {
+        if (valid) {
+          console.log("合法")
+          let that = this;
+          let token = sessionStorage.getItem("token")
+          axios.post('http://localhost:8889/addArticle', qs.stringify({
+            categoryId: that.form.category,
+            title: that.form.title,
+            content: that.content
+          }), {
+            headers: {
+              token: token
+            }
+          }).then(function (response) {
+            console.log(response.data);
+            if (response.data.code !== 200) {
+              that.$message.error(response.data.msg);
+              console.log("错误");
+              that.pubStatus = false;
+            } else {
+              console.log("发布成功")
+              that.pubStatus = false;
+              that.$router.push({path: '/index'})
+            }
+          })
         } else {
-          console.log("发布成功")
-          that.pubStatus=false;
-          that.$router.push({path: '/index'})
+          console.log("不合法");
+          this.pubStatus = false;
         }
       })
-
-
     },
     onEditorChange({quill, html, text}) {
       // console.log('editor change!', quill, html, text)

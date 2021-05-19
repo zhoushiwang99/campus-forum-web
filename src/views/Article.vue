@@ -231,6 +231,10 @@ export default {
     },
     canDel() {
       console.log("canDel")
+      let adminTemp = sessionStorage.getItem("admin");
+      if(adminTemp != null) {
+        return true;
+      }
       if (this.me.id == this.author.id) {
         console.log(this.me.id);
         console.log(this.author.id);
@@ -238,17 +242,22 @@ export default {
       } else {
         this.isMe = false;
       }
-      let admin = sessionStorage.getItem("admin");
-      if (admin === null) {
-        this.isAdmin = false;
-      } else {
-        this.isAdmin = true;
-      }
-      console.log("isMe:" + this.isMe)
-      console.log("isAdmin:" + this.isAdmin)
-      return this.isMe || this.isAdmin;
+      return this.isMe;
+      // let admin = sessionStorage.getItem("admin");
+      // if (admin === null) {
+      //   this.isAdmin = false;
+      // } else {
+      //   this.isAdmin = true;
+      // }
+      // console.log("isMe:" + this.isMe)
+      // console.log("isAdmin:" + this.isAdmin)
+      // return this.isMe || this.isAdmin;
     },
     canDelComment(fromId) {
+      let admin = sessionStorage.getItem("admin");
+      if (admin != null) {
+        return true;
+      }
       console.log("评论者id：" + fromId);
       let temp;
       if (fromId == this.me.id) {

@@ -13,7 +13,7 @@
       </div>
     </div>
     <div style="position: absolute;margin-top: 160px;margin-left:260px;font-size: 14px;width: 800px">
-      <p>{{ user.name }}最近发的信息:</p>
+      <p>{{ user.name }}&nbsp;&nbsp;&nbsp;最近发的信息:</p>
       <ul>
         <li v-for="item in article">
           <el-row>

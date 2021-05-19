@@ -1,8 +1,9 @@
 <template>
   <div style="position: relative">
-    <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect" style="background-color: #409EFF">
+    <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect"
+             style="background-color: #409EFF">
       <el-row>
-        <el-col :span="3" :offset="2" >
+        <el-col :span="3" :offset="2">
           <el-menu-item index="1" @click="goIndex"><img src="static/image/csust.png"/></el-menu-item>
         </el-col>
         <!--        <el-col :span="1" :offset="15">-->
@@ -14,6 +15,8 @@
           <el-submenu index="2" class="ele-nav-item" style="display: inline-block;padding: 0;z-index: 1;opacity: 0">
             <el-menu-item @click="basicSet" index="2-1"><i class="el-icon-setting"></i>基本设置</el-menu-item>
             <el-menu-item @click="homePage" index="2-2"><i class="el-icon-house"></i>个人主页</el-menu-item>
+            <el-menu-item @click="adminPage" index="2-2" v-if="systemAdmin()"><i class="el-icon-s-promotion"></i>系统管理
+            </el-menu-item>
           </el-submenu>
         </el-col>
       </el-row>
@@ -26,6 +29,12 @@
 <script>
 export default {
   name: "IndexNavMenu",
+  inject: ['reload'],
+  watch: {
+    '$route': function () {
+      this.reload();
+    }
+  },
   data() {
     return {
       activeIndex: '1',
@@ -47,16 +56,25 @@ export default {
         path: '/userSet',
       })
     },
-    homePage(){
+    homePage() {
       this.$router.push({
         path: '/user',
         query: {
           userId: this.user.id
         }
       })
+    },
+    adminPage() {
+      this.$router.push({
+        path: '/admin'
+      })
+    },
+    systemAdmin() {
+      let admin = sessionStorage.getItem("admin");
+      return admin != null;
     }
   },
-  mounted() {
+  created() {
     let userJson = JSON.parse(sessionStorage.getItem("user"));
     this.user = userJson;
   }
