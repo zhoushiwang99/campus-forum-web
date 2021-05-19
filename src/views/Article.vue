@@ -6,6 +6,9 @@
       <el-button style="display: inline-block;margin-left: 30px" type="danger" size="mini" :plain="true"
                  @click="delArticle" v-if="canDel()">删除此贴
       </el-button>
+      <el-button style="display: inline-block;margin-left: 30px" type="danger" size="mini" :plain="true"
+                 @click="updateArticle" v-if="canDel()">修改此贴
+      </el-button>
       <div class="detail-about" style="position: relative;margin-top: 10px">
         <div style="width: 60px;height: 60px;display: inline-block">
           <a href="http://www.baidu.com">
@@ -148,10 +151,34 @@ export default {
         that.createTime = response.data.data.createTime;
       })
     },
+    canUpdate(){
+      if (this.me.id == this.author.id) {
+        console.log(this.me.id);
+        console.log(this.author.id);
+        this.isMe = true;
+      } else {
+        this.isMe = false;
+      }
+      return this.isMe;
+    },
+    updateArticle(){
+      this.$router.push({
+        path: '/updateArticle',
+        query: {
+          articleId: this.articleId
+        }
+      })
+    },
     onSubmit() {
       let that = this;
+      let content = that.content;
       that.pubStatus = true;
-      let token = sessionStorage.getItem("token")
+      let token = sessionStorage.getItem("token");
+      if (content == null || content.length <= 0) {
+        this.$message.error("正文内容不得为空");
+        this.pubStatus = false;
+        return;
+      }
       axios.post('http://localhost:8889/addComment', qs.stringify({
         articleId: that.articleId,
         content: that.content,
@@ -162,14 +189,32 @@ export default {
         }
       }).then(function (response) {
         console.log(response.data);
-        if (response.data.code !== 200) {
-          that.$message.error(response.data.msg);
-          console.log("错误");
-        } else {
+        if (response.data.code === 200) {
           console.log("发表评论成功")
+          that.$message({
+            type: 'success',
+            message: `发表评论成功`
+          });
           that.pubStatus = false;
           // that.$router.go(0);
           that.reload();
+        }
+        else if(response.data.code === 10086) {
+          that.$alert(response.data.msg, '发布失败', {
+            confirmButtonText: '确定',
+            callback: action => {
+              that.$message({
+                type: 'error',
+                message: `您被禁言，无法发布`
+              });
+            }
+          });
+          that.pubStatus = false;
+        }
+        else {
+          that.$message.error(response.data.msg);
+          console.log("错误");
+          that.pubStatus = false;
         }
       })
     },

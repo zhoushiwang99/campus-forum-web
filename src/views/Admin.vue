@@ -264,9 +264,10 @@
     </div>
     <div style="display: inline-block;width: 800px;position: absolute;margin-top: 20px" v-if="index === 4">
       <div style="position: absolute;margin-left: 20px">
-        <el-input style="width: 200px;" v-model="keyword"></el-input>
-        <el-button type="success" icon="el-icon-search" @click="searchArticle">搜索用户</el-button>
-        <el-button type="primary" icon="el-icon-search" @click="cancelSearch" v-if="search === 1">取消搜索</el-button>
+        <el-input style="width: 200px;" placeholder="请输入账号或用户名" v-model="userKeyword"></el-input>
+        <el-button type="success" icon="el-icon-search" @click="searchUser">搜索用户</el-button>
+        <el-button type="primary" icon="el-icon-search" @click="cancelSearchUser" v-if="usersearch === 1">取消搜索
+        </el-button>
       </div>
       <div style="position: absolute;margin-top: 60px;margin-left: 20px;width: 1200px">
         <el-table
@@ -292,12 +293,22 @@
             </template>
           </el-table-column>
           <el-table-column
+            label="账号"
+            width="150">
+            <template slot-scope="scope">
+              <span style="margin-left: 10px">
+<!--                {{ scope.row.user.name }}-->
+                {{ scope.row.user.account }}
+              </span>
+            </template>
+          </el-table-column>
+          <el-table-column
             label="学校"
             width="150">
             <template slot-scope="scope">
               <span style="margin-left: 10px">
 <!--                {{ scope.row.user.name }}-->
-                {{ scope.row.universityName}}
+                {{ scope.row.universityName }}
               </span>
             </template>
           </el-table-column>
@@ -312,7 +323,9 @@
             label="禁言时间"
             width="200">
             <template slot-scope="scope">
-              <span style="margin-left: 10px" v-if="scope.row.forbidden===1">{{ dateFormat(scope.row.forbiddenTime) }}</span>
+              <span style="margin-left: 10px" v-if="scope.row.forbidden===1">{{
+                  dateFormat(scope.row.forbiddenTime)
+                }}</span>
             </template>
           </el-table-column>
           <el-table-column label="操作" width="100">
@@ -321,13 +334,13 @@
                 size="mini"
                 type="primary"
                 v-if="scope.row.forbidden===0"
-                @click="cancelTop()">禁言
+                @click="forbiddenTalk(scope.row.user)">禁言
               </el-button>
               <el-button
                 size="mini"
                 type="warning"
                 v-if="scope.row.forbidden===1"
-                @click="deleteArticle(d)">解禁
+                @click="cancelForbiddenTalk(scope.row.user)">解禁
               </el-button>
             </template>
           </el-table-column>
@@ -336,40 +349,89 @@
         <div style="margin-top: 30px;margin-left: 200px">
           <el-pagination
             background
-            layout="prev, pager, next" :hide-on-single-page="false" :current-page="currentPage"
-            :total="total" :page-size="5" @current-change="pageChange"><!--@prev-click="prev" @next-click="next"-->
+            layout="prev, pager, next" :hide-on-single-page="false" :current-page="currentUserPage"
+            :total="userTotal" :page-size="5" @current-change="userPageChange" v-if="usersearch===0">
+            <!--@prev-click="prev" @next-click="next"-->
           </el-pagination>
         </div>
       </div>
+      <div>
+        <el-dialog title="用户禁言" :visible.sync="forbiddenStatus">
+          <el-form :model="forbiddenForm">
+            <el-form-item label="ID" label-width="120px">
+              <el-input v-model="forbiddenForm.id" autocomplete="off" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="账号" label-width="120px">
+              <el-input v-model="forbiddenForm.account" autocomplete="off" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="用户名" label-width="120px">
+              <el-input v-model="forbiddenForm.username" autocomplete="off" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="禁言时间" label-width="120px">
+              <el-date-picker
+                v-model="forbiddenForm.forbiddenDate"
+                type="datetime"
+                :picker-options="pickerOptions"
+                placeholder="选择日期时间">
+              </el-date-picker>
+            </el-form-item>
+          </el-form>
+
+          <div slot="footer" class="dialog-footer">
+            <el-button @click="cancelForbidden">取 消</el-button>
+            <el-button type="primary" @click="forbiddenUser">确 定</el-button>
+          </div>
+        </el-dialog>
+      </div>
+    </div>
+
+    <div style="display: inline-block;width: 800px;position: absolute;margin-top: 20px" v-if="index === 5">
+        <AddNotice></AddNotice>
+    </div>
 
     </div>
-  </div>
 </template>
 
 <script>
 import IndexNavMenu from "../components/IndexNavMenu";
+import AddNotice from "../components/AddNotice";
 import axios from "axios";
 import qs from 'qs';
 import dayjs from 'dayjs';
 
 export default {
   name: "Admin",
-  components: {IndexNavMenu},
+  components: {IndexNavMenu,AddNotice},
   data() {
     return {
       index: 1,
       currentPage: 1,
+      forbiddenStatus: false,
       sort: 0,
       search: 0,
+      usersearch: 0,
       users: [],
       userKeyword: '',
       user: '',
+      userTotal: 0,
+      currentUserPage: 1,
       token: '',
       systemInfo: '',
       cansee: false,
       tempFormCamsee: false,
       form: {
         newCategoryName: ''
+      },
+      pickerOptions: { // 限制不让选择今天以前的
+        disabledDate(time) {
+           return time.getTime() < Date.now() - 8.64e7;
+        }
+      },
+      forbiddenForm:{
+        account: null,
+        username: null,
+        id: null,
+        forbiddenDate: null,
       },
       article: [],
       total: 0,
@@ -410,6 +472,36 @@ export default {
       console.log("统计");
       this.getSystemInfo();
     },
+    cancelForbidden(){
+      this.forbiddenStatus = false;
+    },
+    forbiddenUser(){
+      let that = this;
+      axios.post('http://localhost:8889/admin/forbiddenUser',qs.stringify({
+          userId: that.forbiddenForm.id,
+          time: that.dateFormat(that.forbiddenForm.forbiddenDate)
+      }),{
+        headers:{
+          token : that.token
+        }
+      }).then(function (response){
+        console.log(response.data);
+        if(response.data.code === 200) {
+          that.$message({
+            type: 'success',
+            message: '禁言成功!'
+          });
+          that.getUserList(null,that.currentUserPage,5);
+          that.forbiddenStatus = false;
+        }else {
+          that.$message({
+            type: 'error',
+            message: response.data.msg
+          });
+        }
+      })
+      this.forbiddenStatus=false;
+    },
     categoryManage() {
       this.index = 2;
       console.log("分类");
@@ -423,6 +515,10 @@ export default {
     userManage() {
       this.index = 4;
       this.getUserList(null, 1, 5);
+    },
+    userPageChange(currentPage) {
+      this.currentUserPage = currentPage;
+      this.getUserList(null, currentPage, 5)
     },
     noticeManage() {
       this.index = 5;
@@ -438,12 +534,56 @@ export default {
         return;
       }
       that.search = 1;
-      that.getArticle(tempKeyword, 0, 5);
+      that.getArticle(tempKeyword, 1, 5);
     },
     cancelSearch() {
       this.keyword = '';
       this.search = 0;
-      this.getArticle(null, 0, 5);
+      this.getArticle(null, 1, 5);
+    },
+    forbiddenTalk(user){
+      this.forbiddenForm.account = user.account;
+      this.forbiddenForm.username = user.name;
+      this.forbiddenForm.id = user.id;
+      this.forbiddenStatus = true;
+    },
+    cancelSearchUser() {
+      this.userKeyword = '';
+      this.usersearch = 0;
+      this.getUserList(null, 1, 5);
+    },
+    cancelForbiddenTalk(user){
+      this.$confirm('是否确认解除该用户禁言?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }).then(() => {
+        let that = this;
+        axios.get("http://localhost:8889/admin/cancelForbidden", {
+          params: {
+            userId: user.id
+          },
+          headers: {
+            token: that.token
+          }
+        }).then(function (response) {
+          console.log(response)
+          if (response.data.code === 200) {
+            that.$message({
+              type: 'success',
+              message: '解除禁言成功!'
+            });
+            that.getUserList(null, that.currentUserPage, 5);
+          } else {
+            alert(response.data.msg);
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '解除禁言操作取消'
+        });
+      });
     },
     pageChange(currentPage) {
       this.currentPage = currentPage;
@@ -452,12 +592,12 @@ export default {
     idAsc() {
       this.sort = 0;
       this.currentPage = 1;
-      this.getArticle(this.keyword, 0, 5);
+      this.getArticle(this.keyword, 1, 5);
     },
     idDesc() {
       this.sort = 1;
       this.currentPage = 1;
-      this.getArticle(this.keyword, 0, 5);
+      this.getArticle(this.keyword, 1, 5);
     },
     goArticle(articleId) {
       this.$router.push({
@@ -493,6 +633,19 @@ export default {
         that.article = response.data.data.article;
       })
     },
+    searchUser() {
+      this.usersearch = 1;
+      let that = this;
+      let tempKeyword = this.userKeyword;
+      if (tempKeyword == null || tempKeyword === '') {
+        that.$message({
+          type: 'error',
+          message: "搜索词不能为空"
+        });
+        return;
+      }
+      this.getUserList(this.userKeyword, 1, 5);
+    },
     getUserList(userkey, pageNo, pageSize) {
       let that = this;
       axios.get('http://localhost:8889/admin/getUserList', {
@@ -507,7 +660,8 @@ export default {
       }).then(function (response) {
         console.log(response.data);
         if (response.data.code === 200) {
-          that.users = response.data.data;
+          that.users = response.data.data.userList;
+          that.userTotal = response.data.data.userTotal;
         }
       })
     },

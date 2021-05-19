@@ -32,15 +32,21 @@
             </el-upload>
 
             <quill-editor ref="myQuillEditor"
-                          class="ql-editor"
                           :content="content"
+                          class="ql-editor"
                           :options="editorOption"
                           @change="onEditorChange($event)">
 
             </quill-editor>
 
+            <!--            <el-upload class="avatar-uploader-editor" :action="serverUrl" name="img" :headers="header" :show-file-list="false"-->
+            <!--                       :on-success="uploadSuccess" :on-error="uploadError"> </el-upload>-->
+            <!--            <el-upload class="avatar-uploader-editor-video" :action="serverUrl" name="video" :headers="header" :show-file-list="false"-->
+            <!--                       :on-success="uploadSuccessVideo" :on-error="uploadError"> </el-upload>-->
+            <!--            <el-upload class="avatar-uploader-editor-voice" :action="serverUrl" name="voice" :headers="header" :show-file-list="false"-->
+            <!--                       :on-success="uploadSuccessVoice" :on-error="uploadError"> </el-upload>-->
 
-            <el-button type="primary" @click="onSubmit" :loading="pubStatus">立即发布</el-button>
+            <el-button type="primary" @click="onSubmit" :loading="pubStatus">提交修改</el-button>
           </div>
         </el-form>
       </el-tab-pane>
@@ -58,14 +64,15 @@ import "quill/dist/quill.snow.css";
 import "quill/dist/quill.bubble.css";
 
 export default {
-  name: "AddArticle",
+  name: "UpdateArticle",
   components: {IndexNavMenu, quillEditor},
   data() {
     return {
       articleCategory: '',
       activeName: 'first',
-      pubStatus: false,
       token: '',
+      pubStatus: false,
+      articleId: '',
       content: '',
       editorOption: {
         // theme: 'snow',
@@ -141,7 +148,8 @@ export default {
           console.log("合法")
           let that = this;
           let token = sessionStorage.getItem("token")
-          axios.post('http://localhost:8889/addArticle', qs.stringify({
+          axios.post('http://localhost:8889/updateArticle', qs.stringify({
+            articleId: that.articleId,
             categoryId: that.form.category,
             title: that.form.title,
             content: that.content
@@ -150,33 +158,23 @@ export default {
               token: token
             }
           }).then(function (response) {
-            /*console.log(response.data);
-            if (response.data.code !== 200) {
-              that.$message.error(response.data.msg);
-              console.log("错误");
-              that.pubStatus = false;
-            } else {
-              console.log("发布成功")
-              that.pubStatus = false;
-              that.$router.push({path: '/index'})
-            }*/
             console.log(response.data);
             if (response.data.code === 200) {
               console.log("发布成功")
               that.$message({
                 type: 'success',
-                message: `发布成功`
+                message: `修改成功`
               });
               that.pubStatus = false;
               that.$router.push({path: '/index'});
             }
             else if(response.data.code === 10086) {
-              that.$alert(response.data.msg, '发布失败', {
+              that.$alert(response.data.msg, '修改失败', {
                 confirmButtonText: '确定',
                 callback: action => {
                   that.$message({
                     type: 'error',
-                    message: `您被禁言，无法发布`
+                    message: `您被禁言，无法修改`
                   });
                 }
               });
@@ -270,13 +268,28 @@ export default {
           // 错误，则关闭上传动画
           loading.close();
         });
+    },
+    getThisArticle(articleId){
+      let that = this;
+      axios.get("http://localhost:8889/getArticleById", {
+        params: {
+          articleId: articleId
+        }
+      }).then(function (response) {
+        console.log("返回成功")
+        console.log(response.data)
+        that.form.category = response.data.data.article.categoryId;
+        that.form.title = response.data.data.article.title;
+        that.content = response.data.data.article.content;
+      })
     }
   },
   created() {
+    this.articleId = this.$route.query.articleId;
+    this.getAllArticleCategory();
     let token = sessionStorage.getItem("token")
     this.token = token;
-    this.getAllArticleCategory();
-
+    this.getThisArticle(this.articleId);
   }
 }
 </script>

@@ -10,6 +10,7 @@ import UserSet from "../views/UserSet";
 import SearchArticle from "../views/SearchArticle";
 import Admin from "../views/Admin";
 import dayjs from 'dayjs';
+import UpdateArticle from "../views/UpdateArticle";
 Vue.use(Router)
 
 export default new Router({
@@ -19,6 +20,11 @@ export default new Router({
       path: '/login',
       component: Login,
       name: 'login'
+    },
+    {
+      path:'/updateArticle',
+      component:UpdateArticle,
+      name: 'updateArticle'
     },
     {
       path: '/user',

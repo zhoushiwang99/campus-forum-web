@@ -87,8 +87,8 @@
         </el-breadcrumb-item>
       </el-breadcrumb>
     </div>
-    <div style="width: 400px;height: 170px;position: absolute;margin-left: 800px;margin-top: 200px">
-      <h1>iu</h1>
+    <div class="ql-editor" style="padding: 0;width: 372px;height: 300px;position: absolute;margin-left: 1200px;margin-top: 100px" v-html="notice">
+
     </div>
   </div>
 </template>
@@ -106,6 +106,7 @@ export default {
     return {
       activeName: 'first',
       keyword: '',
+      notice: '',
       articleCategory: '',
       form: {
         region: '0'
@@ -144,6 +145,12 @@ export default {
         query: {
           keyword: tempKeyword
         }
+      })
+    },
+    getNotice(){
+      let that = this;
+      axios.get('http://localhost:8889/getNotice').then(function (response){
+        that.notice = response.data.data.content;
       })
     },
     getAllArticleCategory() {
@@ -315,6 +322,7 @@ export default {
   created() {
     this.getAllArticleCategory();
     this.getArticleByTime();
+    this.getNotice();
   }
 }
 </script>
