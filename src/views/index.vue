@@ -24,7 +24,7 @@
                 <div class="list-info" style="position: relative;margin-top: 10px">
                   <el-row>
                     <el-col :span="1">
-                      <a href="http://www.baidu.com" style="text-decoration: none;color:#999">{{ item.user.name }}</a>
+                      <a :href="'http://localhost:8888/user?userId=' + item.user.id" style="text-decoration: none;color:#999">{{ item.user.name }}</a>
                     </el-col>
                     <el-col :offset="1" :span="6">
                       {{ item.createTime }}

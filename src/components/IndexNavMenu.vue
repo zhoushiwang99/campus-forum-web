@@ -15,8 +15,9 @@
           <el-submenu index="2" class="ele-nav-item" style="display: inline-block;padding: 0;z-index: 1;opacity: 0">
             <el-menu-item @click="basicSet" index="2-1"><i class="el-icon-setting"></i>基本设置</el-menu-item>
             <el-menu-item @click="homePage" index="2-2"><i class="el-icon-house"></i>个人主页</el-menu-item>
-            <el-menu-item @click="adminPage" index="2-2" v-if="systemAdmin()"><i class="el-icon-s-promotion"></i>系统管理
+            <el-menu-item @click="adminPage" index="2-3" v-if="systemAdmin()"><i class="el-icon-s-promotion"></i>系统管理
             </el-menu-item>
+            <el-menu-item @click="logout" index="2-4"><i class="el-icon-switch-button"></i>退出登录</el-menu-item>
           </el-submenu>
         </el-col>
       </el-row>
@@ -27,6 +28,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "IndexNavMenu",
   inject: ['reload'],
@@ -68,6 +71,29 @@ export default {
       this.$router.push({
         path: '/admin'
       })
+    },
+    logout() {
+      this.$confirm('是否确定退出登录?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }).then(() => {
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("admin");
+        sessionStorage.removeItem("user");
+        this.$router.push({
+          path: '/login'
+        });
+        this.$message({
+          type: 'success',
+          message: `退出登录成功`
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消退出'
+        });
+      });
     },
     systemAdmin() {
       let admin = sessionStorage.getItem("admin");

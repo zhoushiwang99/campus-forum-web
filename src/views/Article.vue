@@ -7,11 +7,11 @@
                  @click="delArticle" v-if="canDel()">删除此贴
       </el-button>
       <el-button style="display: inline-block;margin-left: 30px" type="danger" size="mini" :plain="true"
-                 @click="updateArticle" v-if="canDel()">修改此贴
+                 @click="updateArticle" v-if="canModify()">修改此贴
       </el-button>
       <div class="detail-about" style="position: relative;margin-top: 10px">
         <div style="width: 60px;height: 60px;display: inline-block">
-          <a href="http://www.baidu.com">
+          <a :href="'http://localhost:8888/user?userId=' + author.id">
             <el-avatar :size="50" :alt="author.name"
                        :src="author.avatar"></el-avatar>
           </a>
@@ -19,7 +19,7 @@
         <div style="display: inline-block;position: absolute;margin-left: 40px;height: 100px;width: 300px">
           <el-row>
             <el-col :span="6">
-              <a href="http://www.baidu.com"
+              <a :href="'http://localhost:8888/user?userId=' + author.id"
                  style="text-decoration: none;color:#409EFF;height: 15px;line-height:0">{{ author.name }}</a>
             </el-col>
             <el-col :offset="1" :span="17">
@@ -44,14 +44,14 @@
         <li v-for="item in comment" :key="item.comment.id">
           <!--          {{ item }}-->
           <div style="position: relative;margin-top: 20px;margin-left: 180px;display: inline-block">
-            <a href="http://www.baidu.com">
+            <a :href="'http://localhost:8888/user?userId=' + item.fromUser.id">
               <el-avatar :size="50" :alt="item.fromUser.name"
                          :src="item.fromUser.avatar"></el-avatar>
             </a>
           </div>
           <div style="display: inline-block;position: absolute;margin-left: 30px;margin-top: 25px">
             <el-row>
-              <a href="http://www.baidu.com"
+              <a :href="'http://localhost:8888/user?userId=' + item.fromUser.id"
                  style="text-decoration: none;color:#409EFF;height: 15px;line-height:0">{{ item.fromUser.name }}</a>
               <el-button
                 style="display: inline-block;margin-left: 30px;padding:3px;font-size: 12px;width: 30px;height: 18px"
@@ -151,7 +151,7 @@ export default {
         that.createTime = response.data.data.createTime;
       })
     },
-    canUpdate(){
+    canUpdate() {
       if (this.me.id == this.author.id) {
         console.log(this.me.id);
         console.log(this.author.id);
@@ -161,7 +161,7 @@ export default {
       }
       return this.isMe;
     },
-    updateArticle(){
+    updateArticle() {
       this.$router.push({
         path: '/updateArticle',
         query: {
@@ -198,8 +198,7 @@ export default {
           that.pubStatus = false;
           // that.$router.go(0);
           that.reload();
-        }
-        else if(response.data.code === 10086) {
+        } else if (response.data.code === 10086) {
           that.$alert(response.data.msg, '发布失败', {
             confirmButtonText: '确定',
             callback: action => {
@@ -210,8 +209,18 @@ export default {
             }
           });
           that.pubStatus = false;
-        }
-        else {
+        } else if (response.data.code === 10010) {
+          that.$alert(response.data.msg, '发布失败', {
+            confirmButtonText: '确定',
+            callback: action => {
+              that.$message({
+                type: 'error',
+                message: `包含敏感词汇,禁止发布`
+              });
+            }
+          });
+          that.pubStatus = false;
+        } else {
           that.$message.error(response.data.msg);
           console.log("错误");
           that.pubStatus = false;
@@ -220,6 +229,16 @@ export default {
     },
     onDelete() {
 
+    },
+    canModify() {
+      if (this.me.id === this.author.id) {
+        console.log(this.me.id);
+        console.log(this.author.id);
+        this.isMe = true;
+      } else {
+        this.isMe = false;
+      }
+      return this.isMe;
     },
     delArticle() {
       this.$confirm('此操作将永久删除该帖子, 是否继续?', '提示', {
@@ -277,7 +296,7 @@ export default {
     canDel() {
       console.log("canDel")
       let adminTemp = sessionStorage.getItem("admin");
-      if(adminTemp != null) {
+      if (adminTemp != null) {
         return true;
       }
       if (this.me.id == this.author.id) {

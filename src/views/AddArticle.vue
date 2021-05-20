@@ -182,6 +182,18 @@ export default {
               });
               that.pubStatus = false;
             }
+            else if(response.data.code === 10010) {
+              that.$alert(response.data.msg, '发布失败', {
+                confirmButtonText: '确定',
+                callback: action => {
+                  that.$message({
+                    type: 'error',
+                    message: `包含敏感词汇,禁止发布`
+                  });
+                }
+              });
+              that.pubStatus = false;
+            }
             else {
               that.$message.error(response.data.msg);
               console.log("错误");
